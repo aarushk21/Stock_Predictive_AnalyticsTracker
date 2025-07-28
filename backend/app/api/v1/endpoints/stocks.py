@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Any, List
 from app.services.alpha_vantage_service import AlphaVantageService
 from app.services.news_service import NewsService
+from app.services.prediction_service import PredictionService
 
 router = APIRouter()
 alpha_vantage_service = AlphaVantageService()
 news_service = NewsService()
+prediction_service = PredictionService()
 
 @router.get("/quote/{symbol}")
 async def get_stock_quote(symbol: str) -> Dict[str, Any]:
@@ -14,6 +16,42 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
         data = await alpha_vantage_service.get_stock_quote(symbol)
         if "Error Message" in data:
             raise HTTPException(status_code=400, detail=data["Error Message"])
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/comprehensive/{symbol}")
+async def get_comprehensive_stock_data(symbol: str) -> Dict[str, Any]:
+    """Get comprehensive stock data including previous day OHLC and current day data."""
+    try:
+        data = await alpha_vantage_service.get_comprehensive_stock_data(symbol)
+        if "error" in data:
+            raise HTTPException(status_code=400, detail=data["error"])
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/predictions/{symbol}")
+async def get_stock_predictions(symbol: str, days: int = 7) -> Dict[str, Any]:
+    """Get future stock price predictions."""
+    try:
+        if days > 30:
+            raise HTTPException(status_code=400, detail="Maximum prediction days is 30")
+        
+        data = await prediction_service.predict_future_prices(symbol, days)
+        if "error" in data:
+            raise HTTPException(status_code=400, detail=data["error"])
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/prediction-summary/{symbol}")
+async def get_prediction_summary(symbol: str) -> Dict[str, Any]:
+    """Get a summary of stock predictions with key insights."""
+    try:
+        data = await prediction_service.get_prediction_summary(symbol)
+        if "error" in data:
+            raise HTTPException(status_code=400, detail=data["error"])
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
