@@ -340,10 +340,6 @@ npx serve -s build -l 3000
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Support
-
-For support, email support@stockanalytics.com or create an issue in the repository.
-
 ---
 
 **Note**: This is a demo application. For production use, ensure proper API keys, security measures, and error handling are implemented. 
